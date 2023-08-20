@@ -14,3 +14,5 @@ RUN apt-get install -y build-essential \
 RUN pip install django psycopg2-binary
 
 RUN apt-get install -y apache2
+
+# testing git
