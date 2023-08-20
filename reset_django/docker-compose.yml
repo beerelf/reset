@@ -1,0 +1,25 @@
+services:
+    postgres:
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: verysecret
+        ports:
+            - 5432:5432
+        image: postgis/postgis
+        restart: always
+        volumes:
+            - /home/dave/reset/reset_map/reset_django/postgres/data:/var/lib/postgresql/data
+    web:
+        image: crap
+        # this works
+        # command: python /reset_project/manage.py runserver 0.0.0.0:8000
+        volumes:
+            - ./reset_project:/reset_project
+        ports:
+            - 8000:8000
+            - 80:80
+        depends_on:
+            - postgres
+        # use this to copy the build directory from /reset_project/build to /var/www/html and restart apache2
+        command: /reset_project/run.sh
+version: '3.7'
