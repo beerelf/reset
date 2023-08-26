@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from django.urls import path
+from graphene_django.views import GraphQLView
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -125,3 +127,11 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# new stuff, mostly graphene
+urlpatterns = [
+    # ...
+    path("graphql", GraphQLView.as_view(graphiql=True)),
+]
+
+GRAPHENE = {"SCHEMA": "django_root.schema.schema"}

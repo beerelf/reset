@@ -15,6 +15,9 @@ export default function SignIn() {
             password: data.get('password'),
             password_confirmed: data.get('password_confirmed'),
         })
+        fetch('http://localhost:8000/login', {
+            method: 'POST',
+        })
     }
 
     const [newUser, setNewUser] = React.useState<boolean>(false)
