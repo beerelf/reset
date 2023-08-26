@@ -5,18 +5,29 @@ import Grid from '@mui/joy/Grid'
 import Box from '@mui/joy/Box'
 import Typography from '@mui/joy/Typography'
 import React from 'react'
+import Cookies from 'cookies-js'
+
+const csrftoken = Cookies.get('csrftoken')
 
 export default function SignIn() {
     const handleSubmit = (event: React.SyntheticEvent<HTMLFormElement>) => {
         event.preventDefault()
         const data = new FormData(event.currentTarget)
-        console.log({
+        const formdata = {
             email: data.get('email'),
             password: data.get('password'),
             password_confirmed: data.get('password_confirmed'),
-        })
-        fetch('http://localhost:8000/login', {
+        }
+        console.log(formdata, csrftoken)
+        fetch('http://localhost:8000/login/', {
             method: 'POST',
+            credentials: 'include',
+            body: JSON.stringify(formdata),
+            headers: {
+                'X-CSRFToken': csrftoken,
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
         })
     }
 

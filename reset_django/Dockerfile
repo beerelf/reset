@@ -1,3 +1,4 @@
+# docker build -t crap .
 FROM osgeo/gdal
 
 #########################
@@ -9,8 +10,8 @@ RUN apt-get install -y build-essential \
     python3-dev \
     python3-pip
 
-# RUN apt-get install 
-
 RUN pip install django psycopg2-binary graphene-django
 
 RUN apt-get install -y apache2
+
+COPY build /var/www/html

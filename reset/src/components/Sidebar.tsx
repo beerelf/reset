@@ -9,7 +9,7 @@ import Sheet from '@mui/joy/Sheet'
 import MuiLogo from './MuiLogo'
 import { openSidebar } from './utils'
 
-export default function FirstSidebar() {
+export default function Sidebar() {
     return (
         <Sheet
             className='FirstSidebar'

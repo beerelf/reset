@@ -4,8 +4,7 @@ import GlobalStyles from '@mui/joy/GlobalStyles'
 import CssBaseline from '@mui/joy/CssBaseline'
 import Box from '@mui/joy/Box'
 import useScript from './useScript'
-import FirstSidebar from './components/FirstSidebar'
-import SecondSidebar from './components/SecondSidebar'
+import Sidebar from './components/Sidebar'
 import Header from './components/Header'
 import ColorSchemeToggle from './components/ColorSchemeToggle'
 import Map from './components/map/Map'
@@ -55,9 +54,7 @@ export default function JoyOrderDashboardTemplate() {
             <Box sx={{ display: 'flex', minHeight: '100dvh' }}>
                 {/* only get header when size is sm */}
                 <Header />
-                <FirstSidebar />
-                <SecondSidebar />
-                {/* this is the header otherwise */}
+                <Sidebar />
                 <Box
                     component='main'
                     className='MainContent'
