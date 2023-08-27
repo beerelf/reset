@@ -1,12 +1,17 @@
 from django.contrib.auth import authenticate, login
 from django.shortcuts import render
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.decorators import api_view
+import json
 
-# Create your views here.
 
-
+@api_view(["POST"])
 def reset_view(request):
-    username = request.POST["username"]
-    password = request.POST["password"]
+    req = request.data
+    print(req)
+    username = req["username"]
+    password = req["password"]
     user = authenticate(request, username=username, password=password)
     if user is not None:
         login(request, user)
@@ -15,3 +20,5 @@ def reset_view(request):
     else:
         # Return an error
         print("neg")
+
+    return Response(status=status.HTTP_200_OK, data=user)

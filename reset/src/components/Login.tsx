@@ -14,7 +14,7 @@ export default function SignIn() {
         event.preventDefault()
         const data = new FormData(event.currentTarget)
         const formdata = {
-            email: data.get('email'),
+            username: data.get('username'),
             password: data.get('password'),
             password_confirmed: data.get('password_confirmed'),
         }
@@ -54,9 +54,9 @@ export default function SignIn() {
             <Grid container direction={'column'} spacing={2}>
                 <Grid>
                     <Input
-                        placeholder='Email Address'
-                        name='email'
-                        autoComplete='email'
+                        placeholder='Username or email address'
+                        name='username'
+                        autoComplete='username'
                         autoFocus
                     />
                 </Grid>
