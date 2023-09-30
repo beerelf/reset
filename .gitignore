@@ -1,4 +1,4 @@
-# See https://help.github.com/ignore-files/ for more about ignoring files.
+# See https://help.github.com/ignore-files/ for more about ignoring files.i 
 
 # dependencies
 /node_modules
@@ -19,3 +19,8 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# new
+**/__pycache__
+*.py[cod]
+# reset_django/reset_project/reset_project/__pycache__
