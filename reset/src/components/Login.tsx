@@ -8,12 +8,26 @@ import React, { useEffect } from 'react'
 import Cookies from 'cookies-js'
 import { useDispatch, useSelector } from 'react-redux'
 import { LoginType, loginSlice } from './loginSlice'
+import authSlice from './authSlice'
+import { loginUser } from './authActions'
+import { ResetState } from '../App'
 
 const csrftoken = Cookies.get('csrftoken')
 
 export default function SignIn() {
-    const login = useSelector((state: LoginType) => state.login)
+    const login = useSelector((state: ResetState) => state.login)
+    const user = useSelector((state: ResetState) => state.user)
     const dispatch = useDispatch()
+
+    const handleSubmitShitty = async (event: React.SyntheticEvent<HTMLFormElement>) => {
+        const data = new FormData(event.currentTarget)
+        const formdata = {
+            username: data.get('username'),
+            password: data.get('password'),
+        }
+        // @ts-ignore
+        dispatch(loginUser(formdata))
+    }
 
     const handleSubmit = async (event: React.SyntheticEvent<HTMLFormElement>) => {
         event.preventDefault()
@@ -27,7 +41,6 @@ export default function SignIn() {
                     password_confirmed: data.get('password_confirmed'),
                     email: data.get('email'),
                 }
-                console.log(formdata, csrftoken)
                 ret = await fetch('http://localhost:8000/reset/newuser/', {
                     method: 'POST',
                     credentials: 'include',
@@ -43,7 +56,6 @@ export default function SignIn() {
                     username: data.get('username'),
                     password: data.get('password'),
                 }
-                console.log(formdata, csrftoken)
                 ret = await fetch('http://localhost:8000/reset/login/', {
                     method: 'POST',
                     credentials: 'include',
@@ -56,18 +68,20 @@ export default function SignIn() {
                 })
             }
             ret = await ret.json()
-            console.log('returning', ret)
             return ret
         }
         asyncFunc().then((ret: { user: { username: String } }) => {
-            console.log('res', ret.user.username)
-            dispatch(loginSlice.actions.login(ret.user.username))
+            if (ret.user) {
+                console.log('login achieved!', ret.user.username)
+                dispatch(loginSlice.actions.login(ret.user.username))
+            } else {
+                console.log('login failure')
+                dispatch(loginSlice.actions.login(undefined))
+            }
         })
     }
 
-    useEffect(() => {
-        setUsername(login.username)
-    }, [login])
+    useEffect(() => setUsername(login.username), [login])
 
     const [username, setUsername] = React.useState('')
     const [newUser, setNewUser] = React.useState<boolean>(false)

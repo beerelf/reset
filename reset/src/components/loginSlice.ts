@@ -1,19 +1,23 @@
 import { createSlice } from '@reduxjs/toolkit'
+import { Feature } from 'ol'
 
 export interface LoginType {
-    login: {
-        username: string
-    }
+    username: string
+    aoi: Feature[]
 }
 
 export const loginSlice = createSlice({
     name: 'login',
     initialState: {
-        user: null,
+        username: null,
+        aoi: null,
     },
     reducers: {
         login: (state, action) => {
-            state.user = action.payload
+            state.username = action.payload
+        },
+        setaoi: (state, action) => {
+            state.aoi = action.payload
         },
     },
 })

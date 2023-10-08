@@ -9,14 +9,19 @@ import Header from './components/Header'
 import ColorSchemeToggle from './components/ColorSchemeToggle'
 import Map from './components/map/Map'
 import SignIn from './components/Login'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import loginReducer, { LoginType, loginSlice } from './components/loginSlice'
+
+import { UserType } from './components/authActions'
+import { Button } from '@mui/joy'
+import { Feature } from 'ol'
+import GeoJSON from 'ol/format/GeoJSON'
 
 const useEnhancedEffect = typeof window !== 'undefined' ? React.useLayoutEffect : React.useEffect
 
-type ResetState = {
-    login: {
-        user: string
-    }
+export type ResetState = {
+    login: LoginType
+    user: UserType
 }
 
 export default function JoyOrderDashboardTemplate() {
@@ -32,10 +37,68 @@ export default function JoyOrderDashboardTemplate() {
     }, [status])
 
     // Add some redux stuff
-    const login = useSelector((state: ResetState) => state.login.user)
-    console.log('login', login)
+    const dispatch = useDispatch()
+    const login = useSelector((state: ResetState) => state.login) as LoginType
 
-    const showContent = login ? <Map /> : <SignIn />
+    const [fileList, setFileList] = React.useState<FileList | null>()
+
+    const onChangeImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const f = e.target.files
+        console.log(f)
+        setFileList(e.target.files)
+    }
+
+    const doImport = () => {
+        const async_bullshit = async () => {
+            if (fileList) {
+                // Create an object of formData
+                const formData = new FormData()
+
+                // Update the formData object
+                for (var i = 0; i < fileList.length; i++) {
+                    formData.append('file_uploaded', fileList[i])
+                }
+                // This works in the drf tester at http://localhost:8000/reset/upload/ but I get a bad request here.
+                const log_ret = await fetch('http://localhost:8000/reset/upload/', {
+                    method: 'POST',
+                    // headers: { 'Content-Type': 'multipart/form-data' },
+                    body: formData,
+                })
+                // This does delay until the import is finished appropriately.
+                return log_ret
+            }
+        }
+        const ret: any = async_bullshit()
+            .then((f) => f?.json())
+            .then((f) => {
+                // convert aoi to a feature
+                const geojson = new GeoJSON()
+                const feats = geojson.readFeatures(f.aoi)
+                // @ts-ignore
+                feats.forEach((f) => f.getGeometry().transform('EPSG:4326', 'EPSG:3857'))
+
+                dispatch(loginSlice.actions.setaoi(feats))
+            })
+    }
+
+    const showContent = login?.username ? (
+        <>
+            <Map />
+            <div>
+                <div style={{ marginBottom: '10px' }}>
+                    <input
+                        type='file'
+                        accept='.dbf, .shp, .prj, .shx, .kml, .geojson'
+                        onChange={onChangeImportFile}
+                        multiple
+                    />
+                </div>
+                {fileList ? <Button onClick={doImport}>Import</Button> : null}
+            </div>
+        </>
+    ) : (
+        <SignIn />
+    )
 
     return (
         <CssVarsProvider disableTransitionOnChange>

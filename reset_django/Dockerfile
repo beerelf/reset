@@ -17,6 +17,7 @@ RUN pip install django psycopg2-binary \
     django-cors-headers \
     djangorestframework \
     django-graphql-auth \
+    geopandas \
     tzdata 
 
 RUN apt-get install -y apache2 
