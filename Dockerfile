@@ -10,17 +10,17 @@ RUN apt-get install -y build-essential \
     python3-dev \
     python3-pip \
     postgresql-client \
-    apache2
+    apache2 \
+    apache2-dev
 
 RUN pip install django psycopg2-binary \
     graphene-django \
     django-cors-headers \
     djangorestframework \
+    djangorestframework-simplejwt \
     django-graphql-auth \
     geopandas \
     tzdata 
-
-RUN apt-get install -y apache2-dev
 
 RUN pip install mod_wsgi
 
