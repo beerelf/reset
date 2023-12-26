@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { useQuery, gql } from '@apollo/client'
 import { CssVarsProvider } from '@mui/joy/styles'
 import GlobalStyles from '@mui/joy/GlobalStyles'
 import CssBaseline from '@mui/joy/CssBaseline'
@@ -8,7 +9,7 @@ import Sidebar from './components/Sidebar'
 import Header from './components/Header'
 import ColorSchemeToggle from './components/ColorSchemeToggle'
 import Map from './components/map/Map'
-import SignIn from './components/Login'
+import SignIn, { host } from './components/Login'
 import { useDispatch, useSelector } from 'react-redux'
 import loginReducer, { LoginType, loginSlice } from './components/loginSlice'
 
@@ -24,8 +25,22 @@ export type ResetState = {
     user: UserType
 }
 
+const GET_USERS = gql`
+    query GetUsers {
+        users {
+            id
+            username
+            email
+            password
+        }
+    }
+`
+
 export default function JoyOrderDashboardTemplate() {
     const status = useScript(`https://unpkg.com/feather-icons`)
+
+    const { loading, error, data } = useQuery(GET_USERS)
+    console.log(data, loading, error)
 
     useEnhancedEffect(() => {
         // Feather icon setup: https://github.com/feathericons/feather#4-replace
@@ -44,7 +59,6 @@ export default function JoyOrderDashboardTemplate() {
 
     const onChangeImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
         const f = e.target.files
-        console.log(f)
         setFileList(e.target.files)
     }
 
@@ -59,7 +73,7 @@ export default function JoyOrderDashboardTemplate() {
                     formData.append('file_uploaded', fileList[i])
                 }
                 // This works in the drf tester at http://localhost:8000/reset/upload/ but I get a bad request here.
-                const log_ret = await fetch('http://localhost:8000/reset/upload/', {
+                const log_ret = await fetch(`${host}/reset/upload/`, {
                     method: 'POST',
                     // headers: { 'Content-Type': 'multipart/form-data' },
                     body: formData,

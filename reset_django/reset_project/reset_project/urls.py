@@ -16,13 +16,26 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.views.decorators.csrf import csrf_exempt
+from graphene_django.views import GraphQLView
 from reset_project import views
-
 from rest_framework.routers import SimpleRouter
+from reset.schema import schema
+
 
 router = SimpleRouter()
 router.register("reset", views.Reset, basename="reset")
-urlpatterns = router.urls
+# urlpatterns = router.urls
+# router.register(
+#     "graphql", csrf_exempt(GraphQLView.as_view(graphiql=True, schema=schema))
+# )
+# print(router.urls)
+graphql = path(
+    "graphql/", csrf_exempt(GraphQLView.as_view(graphiql=True, schema=schema))
+)
+urlpatterns = router.urls + [
+    graphql,
+]
 
 
 # urlpatterns = [

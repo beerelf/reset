@@ -28,7 +28,13 @@ SECRET_KEY = "django-insecure-r+m$n@#1ny*sy5zp8rn3egu57*(evefn1mh+jhh+=cr(!mtuu9
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "localhost",
+    "localhost:8000",
+    "agroet.com",
+    "agroet.com:8000",
+    "agroet.westus.cloudapp.azure.com",
+]
 
 
 # Application definition
@@ -42,8 +48,16 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "corsheaders",
     "rest_framework",
+    "graphene_django",
     "graphql_auth",
+    "django_filters",
     "reset",
+]
+
+AUTH_USER_MODEL = "reset.UserModel"
+
+AUTHENTICATION_BACKENDS = [
+    "graphql_auth.backends.GraphQLAuthBackend",
 ]
 
 MIDDLEWARE = [
@@ -84,7 +98,7 @@ WSGI_APPLICATION = "reset_project.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "postgres",
+        "NAME": "reset",
         "USER": "postgres",
         "PASSWORD": "verysecret",
         "HOST": "postgres",
@@ -134,24 +148,60 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-ALLOWED_HOSTS = ["localhost"]
-CSRF_TRUSTED_ORIGINS = ["http://localhost:3000", "http://localhost:8000"]
-
-CORS_ORIGIN_ALLOW_ALL = False
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:8000",
+    "http://localhost",
+    "http://agroet.westus.cloudapp.azure.com",
+    "http://agroet.westus.cloudapp.azure.com:8000",
+    "http://agroet.com",
+    "http://agroet.com:8000",
+]
+# seems strange that I need both trusted origins and whitelist but if I take one of them out it dies
 CORS_ORIGIN_WHITELIST = (
     "http://localhost:3000",
     "http://localhost:8000",
     "http://localhost",
+    "http://agroet.westus.cloudapp.azure.com",
+    "http://agroet.westus.cloudapp.azure.com:8000",
+    "http://agroet.com",
+    "http://agroet.com:8000",
 )
 CORS_ALLOW_CREDENTIALS = True
 
 # new stuff, mostly graphene
 urlpatterns = [
-    # ...
     path("graphql", GraphQLView.as_view(graphiql=True)),
 ]
 
-GRAPHENE = {"SCHEMA": "reset.schema.schema"}
+GRAPHENE = {
+    "SCHEMA": "reset.schema.schema",
+    "MIDDLEWARE": ["graphql_jwt.middleware.JSONWebTokenMiddleware"],
+}
+
+AUTHENTICATION_BACKENDS = [
+    "graphql_auth.backends.GraphQLAuthBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", None)
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", None)
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+
+GRAPHQL_JWT = {
+    "JWT_VERIFY_EXPIRATION": True,
+    # optional
+    # "JWT_LONG_RUNNING_REFRESH_TOKEN": True,
+    "JWT_ALLOW_ANY_CLASSES": [
+        "graphql_auth.mutations.Register",
+        "graphql_auth.mutations.VerifyAccount",
+        "graphql_auth.mutations.ObtainJSONWebToken",
+    ],
+}
 
 
 LOGGING = {

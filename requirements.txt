@@ -1,0 +1,8 @@
+django
+graphene-django
+django-cors-headers
+django-rest-framework
+django-graphql-jwt
+django-graphql-auth
+psycopg2
+geopandas

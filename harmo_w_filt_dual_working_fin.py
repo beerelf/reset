@@ -7,8 +7,8 @@ import logging
 download_dir = "hls_data_F"
 
 # Define the date range (start and end dates)
-start_date = "2021-06-10"  # Replace with your start date
-end_date = "2021-06-20"  # Replace with your end date
+start_date = "2020-06-01"  # Replace with your start date
+end_date = "2020-06-30"  # Replace with your end date
 
 # Earthdata Login credentials (replace with your own Earthdata token)
 earthdata_token = "eyJ0eXAiOiJKV1QiLCJvcmlnaW4iOiJFYXJ0aGRhdGEgTG9naW4iLCJzaWciOiJlZGxqd3RwdWJrZXlfb3BzIiwiYWxnIjoiUlMyNTYifQ.eyJ0eXBlIjoiVXNlciIsInVpZCI6Imlkc2dyb3VwMSIsImV4cCI6MTcwMTEyNTc2NCwiaWF0IjoxNjk1OTQxNzY0LCJpc3MiOiJFYXJ0aGRhdGEgTG9naW4ifQ.2PmdKdzph2eqSNOsYzeG4UAI61wsDkEHDunhj9qqtcTscIdPR9BW0yyTtDv9XJ1OVqTWV0TIYy1cWpQsGBMLhf_9LEUSLoERiTvUxT4SynkMWxOlNps1K9A2ubUIPwVSwNOYEG2t4mJaUPbeci51e5nX6ybCyoieKVJN9zt7yI6674G-th1lptHAa_y0Va5brHJnxLU1Ki2a2efsrZ3tYuFMUl82rsmR6XgeK_YFVu1URsEe4B9HmMCxf8zHVE0dyuIPezD_JMmtwsj_prZBI3YdAOvevMHjyV0jTaG34G6ZFKaz1exTIEa2wDO2lAeV8n-2nIk_PTJJB6-9Ab6Yhw"
@@ -81,19 +81,25 @@ with Session() as session:
             else:
                 # Create a list of download URLs for the granules with cloud cover condition
                 download_urls = []
+                if collection_short_name == "HLSL30":
+                    layers = landsat_layers
+                if collection_short_name == "HLSS30":
+                    layers = sentinel_layers
+
                 for g in granules:
                     cloud_cover = int(g.get("cloud_cover", "0"))
                     print(f"cloud cover is {cloud_cover} for granule {g}")
-                    if cloud_cover <= max_cloud_cover:
+                    if cloud_cover >= max_cloud_cover:
                         print(
-                            f"not adding because cloud_cover {cloud_cover} < {max_cloud_cover}"
+                            f"not adding because cloud_cover {cloud_cover} > {max_cloud_cover}"
                         )
+                        continue
                     links = g.get("links", [])
                     for link in links:
                         download_url = link.get("href", "")
                         if any(
                             layer in download_url
-                            for layer in sentinel_layers + landsat_layers
+                            for layer in layers
                         ):
                             download_urls.append(download_url)
 

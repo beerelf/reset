@@ -1,4 +1,4 @@
-import json, logging, os, sys
+import json, logging, os, pathlib, sys
 from django.contrib.auth.models import User
 from django.db.utils import IntegrityError
 from django.contrib.auth import authenticate, login
@@ -16,6 +16,7 @@ import geopandas as gpd
 
 # from osgeo import gdal
 from .serializers import UploadSerializer
+from reset.models import UserModel
 
 LOGGER = logging.getLogger(__name__)
 
@@ -41,7 +42,7 @@ class Reset(viewsets.ViewSet):
         password = req["password"]
         if req["password"] == req["password_confirmed"]:
             try:
-                user = User.objects.create_user(username, email, req["password"])
+                user = UserModel.objects.create_user(username, email, req["password"])
                 user.save()
             except IntegrityError as e:
                 # probably already exists
@@ -94,9 +95,10 @@ class Reset(viewsets.ViewSet):
     @csrf_exempt
     def upload_layer(self, request):
         # uploads from drf page comes in file_uploaded, I guess because it using serializers.UploadSerializer
-        file_uploaded = request.data.get("file_uploaded")
-        aoi = None
-        if file_uploaded:
+        files_uploaded = request.FILES.getlist("file_uploaded")
+        aoi_fname = None
+
+        for file_uploaded in files_uploaded:
             # for now just read the file and send it back
             fname = "tmp/" + file_uploaded.name
             if not os.path.exists("tmp"):
@@ -104,9 +106,12 @@ class Reset(viewsets.ViewSet):
             with default_storage.open(fname, "wb+") as destination:
                 for chunk in file_uploaded.chunks():
                     destination.write(chunk)
-            boundary = gpd.read_file(fname)  # .to_crs("epsg:4326")
-            print(f"loaded boundary {boundary}")
-            aoi = boundary.to_json()
+            if ".shp" in fname or ".geojson" in fname:
+                aoi_fname = fname
+
+        aoi = gpd.read_file(aoi_fname).to_crs("epsg:4326")
+        print(f"loaded boundary {aoi}")
+        aoi = aoi.to_json()
 
         return Response(
             status=status.HTTP_200_OK,

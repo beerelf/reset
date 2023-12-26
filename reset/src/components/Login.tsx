@@ -7,6 +7,7 @@ import Typography from '@mui/joy/Typography'
 import React, { useEffect } from 'react'
 import Cookies from 'cookies-js'
 import { useDispatch, useSelector } from 'react-redux'
+import { gql, useQuery } from '@apollo/client'
 import { LoginType, loginSlice } from './loginSlice'
 import authSlice from './authSlice'
 import { loginUser } from './authActions'
@@ -14,10 +15,40 @@ import { ResetState } from '../App'
 
 const csrftoken = Cookies.get('csrftoken')
 
+// If the server is at 3000 then assume this is a development instance with the server on 8000
+export const host = `${window.location.protocol}//${window.location.hostname}:8000`
+// export const host =
+//     window.location.host.indexOf('3000') > 0
+//         ? `${window.location.protocol}//${window.location.hostname}:8000`
+//         : window.location.origin
+
 export default function SignIn() {
     const login = useSelector((state: ResetState) => state.login)
     const user = useSelector((state: ResetState) => state.user)
     const dispatch = useDispatch()
+
+    // This doesn't work
+    // const GET_USERS = gql`
+    //     query GetUsers {
+    //         users {
+    //             id
+    //             username
+    //             email
+    //             password
+    //         }
+    //     }
+    // `
+
+    // const ADD_USER = gql`
+    //     mutation AddUser {
+    //         register($input: PutUserMutationPayload) {
+    //             success, errors, token
+    //         }
+    //     }`
+
+    // const { loading, error, data: users } = useQuery(GET_USERS)
+    // console.log(loading, error, users)
+    // ** end doesn't work
 
     const handleSubmitShitty = async (event: React.SyntheticEvent<HTMLFormElement>) => {
         const data = new FormData(event.currentTarget)
@@ -41,7 +72,7 @@ export default function SignIn() {
                     password_confirmed: data.get('password_confirmed'),
                     email: data.get('email'),
                 }
-                ret = await fetch('http://localhost:8000/reset/newuser/', {
+                ret = await fetch(`${host}/reset/newuser/`, {
                     method: 'POST',
                     credentials: 'include',
                     body: JSON.stringify(formdata),
@@ -56,7 +87,7 @@ export default function SignIn() {
                     username: data.get('username'),
                     password: data.get('password'),
                 }
-                ret = await fetch('http://localhost:8000/reset/login/', {
+                ret = await fetch(`${host}/reset/login/`, {
                     method: 'POST',
                     credentials: 'include',
                     body: JSON.stringify(formdata),
