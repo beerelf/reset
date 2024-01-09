@@ -95,6 +95,11 @@ export default function JoyOrderDashboardTemplate() {
             })
     }
 
+    const logout = () => {
+        localStorage.clear()
+        dispatch(loginSlice.actions.login(undefined))
+    }
+
     const showContent = login?.username ? (
         <>
             <Map />
@@ -108,6 +113,7 @@ export default function JoyOrderDashboardTemplate() {
                     />
                 </div>
                 {fileList ? <Button onClick={doImport}>Import</Button> : null}
+                <Button onClick={logout}>Logout</Button>
             </div>
         </>
     ) : (

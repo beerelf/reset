@@ -10,7 +10,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { gql, useQuery } from '@apollo/client'
 import { LoginType, loginSlice } from './loginSlice'
 import authSlice from './authSlice'
-import { loginUser } from './authActions'
+// import { loginUser } from './authActions'
 import { ResetState } from '../App'
 
 const csrftoken = Cookies.get('csrftoken')
@@ -26,6 +26,8 @@ export default function SignIn() {
     const login = useSelector((state: ResetState) => state.login)
     const user = useSelector((state: ResetState) => state.user)
     const dispatch = useDispatch()
+
+    console.log('login', login)
 
     // This doesn't work
     // const GET_USERS = gql`
@@ -62,10 +64,14 @@ export default function SignIn() {
 
     const handleSubmit = async (event: React.SyntheticEvent<HTMLFormElement>) => {
         event.preventDefault()
+        const data = new FormData(event.currentTarget)
+        const username = data.get('username')?.toString() || ''
+        const password = data.get('password')?.toString() || ''
         const asyncFunc: any = async () => {
             let ret
-            const data = new FormData(event.currentTarget)
             if (newUser) {
+                setUsername(username)
+                setPassword(password)
                 const formdata = {
                     username: data.get('username'),
                     password: data.get('password'),
@@ -99,23 +105,81 @@ export default function SignIn() {
                 })
             }
             ret = await ret.json()
+            // setAccessToken(ret.)
+            console.log(ret)
             return ret
         }
-        asyncFunc().then((ret: { user: { username: String } }) => {
+        asyncFunc().then((ret: { user: { username: string } }) => {
             if (ret.user) {
                 console.log('login achieved!', ret.user.username)
+                localStorage.setItem('username', ret.user.username)
+                localStorage.setItem('password', password)
                 dispatch(loginSlice.actions.login(ret.user.username))
             } else {
                 console.log('login failure')
+                localStorage.clear()
                 dispatch(loginSlice.actions.login(undefined))
+            }
+        })
+        const refreshTokenFunc: any = async () => {
+            const formdata = {
+                username: username,
+                password: password,
+            }
+            const ret = await fetch(`${host}/api/token/`, {
+                method: 'POST',
+                credentials: 'include',
+                body: JSON.stringify(formdata),
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                },
+            })
+            const json = await ret.json()
+            console.log(json)
+            return json
+        }
+        refreshTokenFunc().then((ret: { access: string; refresh: string }) => {
+            if (ret.access) {
+                console.log('refresh achieved!', ret.access)
+                // Seems that the auth tutorial uses localstorage
+                setAccessToken(ret.access)
+                localStorage.setItem('access_token', ret.access)
+                setRefreshToken(ret.refresh)
+                localStorage.setItem('refresh_token', ret.refresh)
+            } else {
+                console.log('refresh failure')
             }
         })
     }
 
-    useEffect(() => setUsername(login.username), [login])
+    // useEffect(() => setUsername(login.username), [login])
+    useEffect(() => {
+        if (localStorage.getItem('access_token')) {
+            console.log('yeah baby', localStorage.getItem('access_token'))
+        }
+    }, [])
 
-    const [username, setUsername] = React.useState('')
+    // I need to dispatch the username so the map will be displayed
+    useEffect(() => {
+        if (localStorage.getItem('username')) {
+            const formdata = {
+                username: localStorage.getItem('username'),
+                password: localStorage.getItem('password'),
+            }
+            // This will make the system think the user is logged in, user needs to be cleared if login failed
+            dispatch(loginSlice.actions.login(formdata.username))
+        }
+    }, [])
+
+    const [username, setUsername] = React.useState<string>(localStorage.getItem('username') || '')
+    const [password, setPassword] = React.useState<string>('')
     const [newUser, setNewUser] = React.useState<boolean>(false)
+    const [accessToken, setAccessToken] = React.useState<string>('')
+    const [refreshToken, setRefreshToken] = React.useState<string>('')
+
+    console.log('refresh is', refreshToken)
 
     return (
         <Box
