@@ -16,18 +16,17 @@ import { ResetState } from '../App'
 const csrftoken = Cookies.get('csrftoken')
 
 // If the server is at 3000 then assume this is a development instance with the server on 8000
-export const host = `${window.location.protocol}//${window.location.hostname}:8000`
-// export const host =
-//     window.location.host.indexOf('3000') > 0
-//         ? `${window.location.protocol}//${window.location.hostname}:8000`
-//         : window.location.origin
+export const host =
+    window.location.host.indexOf('3000') > 0
+        ? `${window.location.protocol}//${window.location.hostname}:8000`
+        : window.location.origin
 
 export default function SignIn() {
     const login = useSelector((state: ResetState) => state.login)
     const user = useSelector((state: ResetState) => state.user)
     const dispatch = useDispatch()
 
-    console.log('login', login)
+    console.log('login', login, 'user', user)
 
     // This doesn't work
     // const GET_USERS = gql`
@@ -62,12 +61,14 @@ export default function SignIn() {
         dispatch(loginUser(formdata))
     }
 
+    const getState = async () => {}
+
     const handleSubmit = async (event: React.SyntheticEvent<HTMLFormElement>) => {
         event.preventDefault()
         const data = new FormData(event.currentTarget)
         const username = data.get('username')?.toString() || ''
         const password = data.get('password')?.toString() || ''
-        const asyncFunc: any = async () => {
+        const loginFunc: any = async () => {
             let ret
             if (newUser) {
                 setUsername(username)
@@ -109,15 +110,13 @@ export default function SignIn() {
             console.log(ret)
             return ret
         }
-        asyncFunc().then((ret: { user: { username: string } }) => {
+        loginFunc().then((ret: { user: { username: string } }) => {
             if (ret.user) {
-                console.log('login achieved!', ret.user.username)
                 localStorage.setItem('username', ret.user.username)
-                localStorage.setItem('password', password)
                 dispatch(loginSlice.actions.login(ret.user.username))
             } else {
-                console.log('login failure')
                 localStorage.clear()
+                alert('Login failed')
                 dispatch(loginSlice.actions.login(undefined))
             }
         })

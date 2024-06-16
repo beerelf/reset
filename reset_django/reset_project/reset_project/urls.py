@@ -14,9 +14,11 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, re_path
 from django.views.decorators.csrf import csrf_exempt
+from django.views.generic import TemplateView
 from graphene_django.views import GraphQLView
 from rest_framework.routers import SimpleRouter
 from rest_framework_simplejwt.views import (
@@ -25,7 +27,6 @@ from rest_framework_simplejwt.views import (
 )
 from reset_project import views
 from reset.schema import schema
-
 
 router = SimpleRouter()
 router.register("reset", views.Reset, basename="reset")
@@ -41,6 +42,10 @@ urlpatterns = router.urls + [
     graphql,
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    # doesn't work to get to the non-django standard homepage
+    # re_path(r".*", TemplateView.as_view(template_name="/var/www/html/index.html")),
+    # something to try
+    path("", views.index, name="index"),
 ]
 
 

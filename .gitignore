@@ -1,15 +1,56 @@
-# See https://help.github.com/ignore-files/ for more about ignoring files.
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
 
-# dependencies
-/node_modules
+# C extensions
+*.so
 
-# testing
-/coverage
+# Distribution / packaging
+bin/
+build/
+develop-eggs/
+dist/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
 
-# production
-build
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
 
-# misc
+# Unit test / coverage reports
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+
+# Translations
+*.mo
+
+# Mr Developer
+.mr.developer.cfg
+.project
+.pydevproject
+
+# Rope
+.ropeproject
+
+# Django stuff:
+*.log
+*.pot
+
+# Sphinx documentation
+docs/_build/
+
+
+# extra stuff
 .DS_Store
 .env.local
 .env.development.local
@@ -22,6 +63,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# new
+tmp/
 __pycache__/
-*.py[cod]
+reset_django/reset_project/reset_project/__pycache__/

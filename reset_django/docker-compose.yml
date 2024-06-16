@@ -9,19 +9,51 @@ services:
         restart: always
         volumes:
             - /home/dave/r/reset_map/reset_django/postgres/data:/var/lib/postgresql/data
+        networks:
+            - agroet-net
+
+    csip:
+        container_name: 'csip'
+        #image: pattersd/csip-reset:2.16.2
+        #image: pattersd/csip-reset:test
+        networks:
+            - agroet-net
+        image: pattersd/csip-reset:new_download
+        ports:
+            - 8080:8080
+        volumes:
+            - /home/dave/r/docker_homepage/reset/reset_csip:/reset
+            - /home/dave/r/docker_homepage/reset/tmp/csip:/tmp/csip
+        environment:
+            - STAC_API_URL=https:earth-search.aws.element84.com/v0
+            - SATUTILS_DATADIR=/home/dave/r/docker_homepage/reset
+            - CACHE_DB_HOST=cache_db
+            - CACHE_DB_PORT=5432
+            - admin_url=localhost:8001
+
     web:
-        image: pattersd/reset_new_web
-        # this works
+        image: pattersd/reset_new_web:test
+        # this works but doesn't let me interact in the container, so be sure to edit run.sh
         # command: python /reset_project/manage.py runserver 0.0.0.0:8000
+        # should look at install.py to see if this is the case
+        # /home/dave/r/reset_map/Dockerfile should copy all the directories:
+        # ADD ./reset_django/reset_project /reset_project
+        # ADD ./reset/build /var/www/html
+        # so this volumes line shouldn't be needed, although it isn't working
         volumes:
             - ./reset_project:/reset_project
-            # for apache2
-            - /home/dave/r/reset_map/reset/build:/var/www/html
+            - /home/dave/r/reset_map/reset/build:/var/www/html # for apache2
         ports:
-            - 8000:8000
             - 80:80
+            - 8000:8000
         depends_on:
             - postgres
+        networks:
+            - agroet-net
         # use this to copy the build directory from /reset_project/build to /var/www/html and restart apache2
         # command: /reset_project/run.sh
+
+networks:
+    agroet-net: {}
+
 version: '3.7'

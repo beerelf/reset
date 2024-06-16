@@ -17,6 +17,7 @@ import { UserType } from './components/authActions'
 import { Button } from '@mui/joy'
 import { Feature } from 'ol'
 import GeoJSON from 'ol/format/GeoJSON'
+import { setInterval } from 'timers'
 
 const useEnhancedEffect = typeof window !== 'undefined' ? React.useLayoutEffect : React.useEffect
 
@@ -54,6 +55,7 @@ export default function JoyOrderDashboardTemplate() {
     // Add some redux stuff
     const dispatch = useDispatch()
     const login = useSelector((state: ResetState) => state.login) as LoginType
+    console.log('login', login)
 
     const [fileList, setFileList] = React.useState<FileList | null>()
 
@@ -63,7 +65,7 @@ export default function JoyOrderDashboardTemplate() {
     }
 
     const doImport = () => {
-        const async_bullshit = async () => {
+        const async_function = async () => {
             if (fileList) {
                 // Create an object of formData
                 const formData = new FormData()
@@ -82,7 +84,7 @@ export default function JoyOrderDashboardTemplate() {
                 return log_ret
             }
         }
-        const ret: any = async_bullshit()
+        const ret: any = async_function()
             .then((f) => f?.json())
             .then((f) => {
                 // convert aoi to a feature
@@ -92,6 +94,28 @@ export default function JoyOrderDashboardTemplate() {
                 feats.forEach((f) => f.getGeometry().transform('EPSG:4326', 'EPSG:3857'))
 
                 dispatch(loginSlice.actions.setaoi(feats))
+            })
+    }
+
+    const doProcess = () => {
+        const async_func = async () => {
+            setTimeout(async () => {
+                // kick off process
+                const ret = await fetch(`${host}/reset/process/`, {
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    method: 'POST',
+                    body: JSON.stringify({ boundary_option: 'oi' }),
+                })
+            })
+        }
+        async_func()
+            // @ts-ignore
+            .then((f) => f?.json())
+            .then((f) => {
+                console.log('wowowow')
             })
     }
 
@@ -113,7 +137,10 @@ export default function JoyOrderDashboardTemplate() {
                     />
                 </div>
                 {fileList ? <Button onClick={doImport}>Import</Button> : null}
-                <Button onClick={logout}>Logout</Button>
+                {login?.aoi ? <Button onClick={doProcess}>Calculate</Button> : null}
+                <Button onClick={logout} sx={{ float: 'right' }}>
+                    Logout
+                </Button>
             </div>
         </>
     ) : (

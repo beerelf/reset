@@ -1,0 +1,48 @@
+# docker build -t pattersd/reset_new_web .
+FROM ubuntu/apache2
+
+# Copy source code and databases
+ADD ./reset_django/reset_project /reset_project
+ADD ./reset/build /var/www/html
+
+# Setup working directory
+ADD requirements.txt /tmp/requirements.txt
+WORKDIR /tmp
+
+#########################
+# Apt
+#########################
+RUN apt-get -y update && apt-get install -y software-properties-common
+
+RUN apt-get install -y apache2-dev
+RUN apt-get install -y build-essential \
+    mercurial \
+    git \
+    python3-dev \
+    python3-pip \
+    libpq-dev \
+    libgdal-dev \
+    gdal-bin
+
+# ADD files/
+
+# # nodejs
+# RUN apt-get install -y curl && curl -sL https://deb.nodesource.com/setup_6.x | bash -
+# RUN apt-get install -y nodejs
+
+# # Yarn
+# RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
+#     echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list && \
+#     apt-get update && apt-get install yarn
+
+# RUN npm install -g webpack@^3.6.0
+
+# # Install nodejs-legacy to prevent sqlite3 build errors during Yarn package installs.
+# # https://github.com/mapbox/node-sqlite3/issues/612#issuecomment-247761578
+# RUN npm i sqlite3 --build-from-source
+
+##################
+# pip
+##################
+# --break-system-packages fixes the error: externally-managed-environment
+RUN pip3 install --break-system-packages -r requirements.txt

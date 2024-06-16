@@ -11,7 +11,8 @@ RUN apt-get install -y build-essential \
     python3-pip \
     postgresql-client \
     apache2 \
-    apache2-dev
+    apache2-dev \
+    libapache2-mod-wsgi-py3
 
 RUN pip install django psycopg2-binary \
     graphene-django \
@@ -20,14 +21,17 @@ RUN pip install django psycopg2-binary \
     djangorestframework-simplejwt \
     django-graphql-auth \
     geopandas \
-    tzdata 
+    tzdata  \
+    csip
 
 RUN pip install mod_wsgi
 
-COPY ./reset/build /var/www/html
+# add apache2 configuration
+ADD ./reset_django/files/000-default.conf /etc/apache2/sites-available
 
 # Copy source code and databases
 ADD ./reset_django/reset_project /reset_project
 ADD ./reset/build /var/www/html
 
 CMD /reset_project/run.sh
+# CMD mod_wsgi-express start-server /reset_project/reset_project/wsgi.py --user www-data --group www-data
