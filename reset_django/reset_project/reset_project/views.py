@@ -13,6 +13,9 @@ from django.contrib.gis.gdal import DataSource
 from django.core.files.storage import default_storage
 
 import geopandas as gpd
+
+# from shapely.geometry import shape
+import shapely
 import csip
 
 # from osgeo import gdal
@@ -126,17 +129,17 @@ class Reset(viewsets.ViewSet):
             if ".shp" in fname or ".geojson" in fname:
                 aoi_fname = fname
 
-        shutil.chown(fname, user="www-data", group="www-data")
+        # shutil.chown(fname, user="www-data", group="www-data")
 
         aoi = gpd.read_file(aoi_fname).to_crs("epsg:4326")
         print(f"loaded boundary {aoi}")
-        aoi = aoi.to_json()
+        aoi_json = aoi.to_json()
 
         return Response(
             status=status.HTTP_200_OK,
             data={
                 "file_name": file_uploaded.name if file_uploaded else None,
-                "aoi": aoi,
+                "aoi": aoi_json,
             },
         )
 
@@ -150,30 +153,37 @@ class Reset(viewsets.ViewSet):
     @csrf_exempt
     def process(self, request):
         req = request.data
-        # boundary = req["boundary"]
-        boundary = {
-            "features": [
-                {
-                    "geometry": {
-                        "coordinates": [
-                            [
-                                [
-                                    [-105.204340919673, 40.6972465847942],
-                                    [-105.016200050561, 40.6951641880362],
-                                    [-104.999720558381, 40.4500296208208],
-                                    [-105.205714210693, 40.4458493462744],
-                                    [-105.204340919673, 40.6972465847942],
-                                ]
-                            ]
-                        ],
-                        "type": "MultiPolygon",
-                    },
-                    "properties": {},
-                    "type": "Feature",
-                }
-            ],
-            "type": "FeatureCollection",
-        }
+        import pdb
+
+        pdb.set_trace()
+        boundary = req["boundary"]
+        print(boundary)
+        geom = [shapely.from_geojson(i) for i in boundary]
+        gpd.GeoDataFrame({"geometry": geom})
+
+        # boundary = {
+        #     "features": [
+        #         {
+        #             "geometry": {
+        #                 "coordinates": [
+        #                     [
+        #                         [
+        #                             [-105.204340919673, 40.6972465847942],
+        #                             [-105.016200050561, 40.6951641880362],
+        #                             [-104.999720558381, 40.4500296208208],
+        #                             [-105.205714210693, 40.4458493462744],
+        #                             [-105.204340919673, 40.6972465847942],
+        #                         ]
+        #                     ]
+        #                 ],
+        #                 "type": "MultiPolygon",
+        #             },
+        #             "properties": {},
+        #             "type": "Feature",
+        #         }
+        #     ],
+        #     "type": "FeatureCollection",
+        # }
         c = csip.Client()
         c.add_data("boundary", boundary)
         r = c.execute(
@@ -183,4 +193,5 @@ class Reset(viewsets.ViewSet):
             )
         )
         print("response is ", r)
-        return Response({"process": "oi"})
+
+        return Response({"process": True})

@@ -12,12 +12,11 @@ import Map from './components/map/Map'
 import SignIn, { host } from './components/Login'
 import { useDispatch, useSelector } from 'react-redux'
 import loginReducer, { LoginType, loginSlice } from './components/loginSlice'
-
+import { useKeycloak } from '@react-keycloak/web'
 import { UserType } from './components/authActions'
 import { Button } from '@mui/joy'
-import { Feature } from 'ol'
+// @ts-ignore
 import GeoJSON from 'ol/format/GeoJSON'
-import { setInterval } from 'timers'
 
 const useEnhancedEffect = typeof window !== 'undefined' ? React.useLayoutEffect : React.useEffect
 
@@ -57,6 +56,9 @@ export default function JoyOrderDashboardTemplate() {
     const login = useSelector((state: ResetState) => state.login) as LoginType
     console.log('login', login)
 
+    // const { keycloak, initialized } = useKeycloak()
+    // console.log('keycloak hook', keycloak, initialized)
+
     const [fileList, setFileList] = React.useState<FileList | null>()
 
     const onChangeImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,7 +66,7 @@ export default function JoyOrderDashboardTemplate() {
         setFileList(e.target.files)
     }
 
-    const doImport = () => {
+    const doImport = async () => {
         const async_function = async () => {
             if (fileList) {
                 // Create an object of formData
@@ -84,39 +86,32 @@ export default function JoyOrderDashboardTemplate() {
                 return log_ret
             }
         }
-        const ret: any = async_function()
-            .then((f) => f?.json())
-            .then((f) => {
-                // convert aoi to a feature
-                const geojson = new GeoJSON()
-                const feats = geojson.readFeatures(f.aoi)
-                // @ts-ignore
-                feats.forEach((f) => f.getGeometry().transform('EPSG:4326', 'EPSG:3857'))
-
-                dispatch(loginSlice.actions.setaoi(feats))
-            })
+        const ret: any = await async_function()
+        const upload_result = await ret.json()
+        console.log('Upload_result', upload_result)
+        // convert aoi to features
+        const geojson = new GeoJSON()
+        const feats = geojson.readFeatures(upload_result.aoi)
+        feats.forEach((f: any) => f.getGeometry().transform('EPSG:4326', 'EPSG:3857'))
+        dispatch(loginSlice.actions.setaoifeats(feats))
     }
 
-    const doProcess = () => {
+    const doProcess = async () => {
         const async_func = async () => {
-            setTimeout(async () => {
-                // kick off process
-                const ret = await fetch(`${host}/reset/process/`, {
-                    headers: {
-                        Accept: 'application/json',
-                        'Content-Type': 'application/json',
-                    },
-                    method: 'POST',
-                    body: JSON.stringify({ boundary_option: 'oi' }),
-                })
+            // kick off process
+            const ret = await fetch(`${host}/reset/process/`, {
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                method: 'POST',
+                body: JSON.stringify({ boundary: login.aoi }),
             })
+            const json = await ret.json()
+            return json
         }
-        async_func()
-            // @ts-ignore
-            .then((f) => f?.json())
-            .then((f) => {
-                console.log('wowowow')
-            })
+        const j = await async_func()
+        alert(j.process)
     }
 
     const logout = () => {
@@ -201,7 +196,7 @@ export default function JoyOrderDashboardTemplate() {
                             border: '1px solid lightgray',
                         }}
                     >
-                        <Box>I am the coolest header</Box>
+                        <Box>I am a header</Box>
                         <ColorSchemeToggle
                             sx={{ ml: 'auto', display: { xs: 'none', md: 'inline-flex' } }}
                         />

@@ -1,7 +1,7 @@
 import React from 'react'
 import { fromLonLat } from 'ol/proj'
 import { Coordinate } from 'ol/coordinate'
-import { Point } from 'ol/geom'
+import { Geometry, Point } from 'ol/geom'
 import { buffer, containsXY, Extent, getCenter, getSize } from 'ol/extent'
 import View from 'ol/View'
 import Feature from 'ol/Feature'
@@ -48,7 +48,6 @@ const extentBoundary = (features: Feature[], bufferVal: number | null = null) =>
 export default function Map(): JSX.Element {
     // See if I have an aoi
     const login = useSelector((state: ResetState) => state.login) as LoginType
-    const aoi = login.aoi
 
     const [view, setView] = React.useState() as [View, Function]
     const mapRef = React.useRef() as React.RefObject<RMap>
@@ -60,10 +59,10 @@ export default function Map(): JSX.Element {
     }, [mapRef.current])
 
     const aoiLayer = React.useMemo(() => {
-        return aoi ? (
+        return login.aoifeats?.length ? (
             <RLayerVector
                 zIndex={19}
-                features={aoi}
+                features={login.aoifeats}
                 format={new GeoJSON({ featureProjection: 'EPSG:3857' })}
                 opacity={0.5}
                 key={Math.random()}
@@ -74,16 +73,16 @@ export default function Map(): JSX.Element {
                 </RStyle.RStyle>
             </RLayerVector>
         ) : null
-    }, [aoi])
+    }, [login.aoifeats])
 
     React.useEffect(() => {
-        if (view && aoi) {
-            view.fit(extentBoundary(aoi), {
+        if (view && login.aoifeats) {
+            view.fit(extentBoundary(login.aoifeats), {
                 duration: 250,
                 maxZoom: 15,
             })
         }
-    }, [view, aoi])
+    }, [view, login.aoifeats])
     return (
         <RMap className='example-map' initial={{ center: INITIAL_CENTER, zoom: 11 }} ref={mapRef}>
             <ROSM />

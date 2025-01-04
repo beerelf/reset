@@ -15,6 +15,15 @@ from django.urls import path
 from graphene_django.views import GraphQLView
 import os
 
+# to fix ImportError: cannot import name 'ugettext' from 'django.utils.translation'
+import django
+from django.utils.translation import gettext, gettext_lazy
+
+# added from https://stackoverflow.com/questions/74826436/importerror-cannot-import-name-ugettext-from-django-utils-translation
+django.utils.translation.ugettext = gettext
+django.utils.translation.ugettext_lazy = gettext_lazy
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 print("base_dir", BASE_DIR)

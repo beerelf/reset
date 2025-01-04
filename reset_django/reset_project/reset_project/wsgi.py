@@ -16,4 +16,4 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "reset_project.settings")
 
 application = get_wsgi_application()
 
-print("oi")
+print("wsgi loaded")

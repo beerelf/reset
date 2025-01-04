@@ -1,35 +1,39 @@
 services:
     postgres:
-        environment:
-            POSTGRES_USER: postgres
-            POSTGRES_PASSWORD: verysecret
+        # environment:
+        # POSTGRES_USER: postgres
+        # POSTGRES_PASSWORD: verysecret
         ports:
             - 5432:5432
         image: postgis/postgis
         restart: always
+        env_file:
+            - .env
         volumes:
             - /home/dave/r/reset_map/reset_django/postgres/data:/var/lib/postgresql/data
         networks:
-            - agroet-net
+            agroet-net:
+                aliases:
+                    - postgres
 
-    csip:
-        container_name: 'csip'
-        #image: pattersd/csip-reset:2.16.2
-        #image: pattersd/csip-reset:test
-        networks:
-            - agroet-net
-        image: pattersd/csip-reset:new_download
-        ports:
-            - 8080:8080
-        volumes:
-            - /home/dave/r/docker_homepage/reset/reset_csip:/reset
-            - /home/dave/r/docker_homepage/reset/tmp/csip:/tmp/csip
-        environment:
-            - STAC_API_URL=https:earth-search.aws.element84.com/v0
-            - SATUTILS_DATADIR=/home/dave/r/docker_homepage/reset
-            - CACHE_DB_HOST=cache_db
-            - CACHE_DB_PORT=5432
-            - admin_url=localhost:8001
+    # csip:
+    #     container_name: 'csip'
+    #     #image: pattersd/csip-reset:2.16.2
+    #     #image: pattersd/csip-reset:test
+    #     networks:
+    #         - agroet-net
+    #     image: pattersd/csip-reset:new_download
+    #     ports:
+    #         - 8080:8080
+    #     volumes:
+    #         - /home/dave/r/docker_homepage/reset/reset_csip:/reset
+    #         - /home/dave/r/docker_homepage/reset/tmp/csip:/tmp/csip
+    #     environment:
+    #         - STAC_API_URL=https:earth-search.aws.element84.com/v0
+    #         - SATUTILS_DATADIR=/home/dave/r/docker_homepage/reset
+    #         - CACHE_DB_HOST=cache_db
+    #         - CACHE_DB_PORT=5432
+    #         - admin_url=localhost:8001
 
     web:
         image: pattersd/reset_new_web:test
@@ -46,6 +50,8 @@ services:
         ports:
             - 80:80
             - 8000:8000
+        env_file:
+            - .env
         depends_on:
             - postgres
         networks:
@@ -53,7 +59,17 @@ services:
         # use this to copy the build directory from /reset_project/build to /var/www/html and restart apache2
         # command: /reset_project/run.sh
 
+    keycloak:
+        build:
+            context: ./kc
+        depends_on:
+            - postgres
+        env_file:
+            - .env
+        ports:
+            - 8088:8080
+        networks:
+            - agroet-net
+
 networks:
     agroet-net: {}
-
-version: '3.7'
