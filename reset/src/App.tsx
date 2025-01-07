@@ -12,7 +12,7 @@ import Map from './components/map/Map'
 import SignIn, { host } from './components/Login'
 import { useDispatch, useSelector } from 'react-redux'
 import loginReducer, { LoginType, loginSlice } from './components/loginSlice'
-import { useKeycloak } from '@react-keycloak/web'
+import { useAuth } from 'react-oidc-context'
 import { UserType } from './components/authActions'
 import { Button } from '@mui/joy'
 // @ts-ignore
@@ -56,8 +56,8 @@ export default function JoyOrderDashboardTemplate() {
     const login = useSelector((state: ResetState) => state.login) as LoginType
     console.log('login', login)
 
-    // const { keycloak, initialized } = useKeycloak()
-    // console.log('keycloak hook', keycloak, initialized)
+    const auth = useAuth()
+    console.log('keycloak hook', auth)
 
     const [fileList, setFileList] = React.useState<FileList | null>()
 
@@ -117,9 +117,10 @@ export default function JoyOrderDashboardTemplate() {
     const logout = () => {
         localStorage.clear()
         dispatch(loginSlice.actions.login(undefined))
+        void auth.signoutRedirect()
     }
 
-    const showContent = login?.username ? (
+    const showContent = auth.isAuthenticated ? (
         <>
             <Map />
             <div>
@@ -139,7 +140,7 @@ export default function JoyOrderDashboardTemplate() {
             </div>
         </>
     ) : (
-        <SignIn />
+        <div>You are not authenticated</div>
     )
 
     return (
